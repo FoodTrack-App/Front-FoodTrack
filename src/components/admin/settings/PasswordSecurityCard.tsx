@@ -1,61 +1,46 @@
 "use client";
-import { useState } from "react";
 import CardContent from "@/components/admin/Cards";
 import { LockOutline } from "solar-icon-set";
 
 type Props = {
   lastPasswordChangeDays: number;
+  isChanging: boolean;
+  onModify: () => void;
+  onUpdatePassword: () => void;
+  onCancel: () => void;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+  onCurrentPasswordChange: (value: string) => void;
+  onNewPasswordChange: (value: string) => void;
+  onConfirmPasswordChange: (value: string) => void;
 };
 
-export default function PasswordSecurityCard({ lastPasswordChangeDays }: Props) {
-  const [isEditingPassword, setIsEditingPassword] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  const handleUpdatePassword = () => {
-    if (!currentPassword.trim()) {
-      alert("Ingresa tu contraseña actual");
-      return;
-    }
-    if (!newPassword.trim() || newPassword.trim().length < 8) {
-      alert("La nueva contraseña debe tener al menos 8 caracteres");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      alert("Las contraseñas no coinciden");
-      return;
-    }
-
-    console.log("[Configuración - Actualizar Contraseña]", {
-      currentPassword: "***",
-      newPassword: "***",
-    });
-
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setIsEditingPassword(false);
-  };
-
-  const handleCancelPassword = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setIsEditingPassword(false);
-  };
+export default function PasswordSecurityCard({ 
+  lastPasswordChangeDays,
+  isChanging,
+  onModify,
+  onUpdatePassword,
+  onCancel,
+  currentPassword,
+  newPassword,
+  confirmPassword,
+  onCurrentPasswordChange,
+  onNewPasswordChange,
+  onConfirmPasswordChange,
+}: Props) {
 
   return (
     <CardContent
       variant={"4"}
       title="Seguridad de la Cuenta"
       icon={<LockOutline />}
-      isEditingPassword={isEditingPassword}
-      onModify={() => setIsEditingPassword(true)}
-      onUpdatePassword={handleUpdatePassword}
-      onCancelPassword={handleCancelPassword}
+      isEditingPassword={isChanging}
+      onModify={onModify}
+      onUpdatePassword={onUpdatePassword}
+      onCancelPassword={onCancel}
     >
-      {!isEditingPassword ? (
+      {!isChanging ? (
         <div className="flex flex-col py-10 gap-3 items-center justify-center">
           <div className="text-negativo bg-negativo/10 rounded-full p-6">
             <LockOutline className="w-10 h-10" />
@@ -76,7 +61,7 @@ export default function PasswordSecurityCard({ lastPasswordChangeDays }: Props) 
             <input
               type="password"
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              onChange={(e) => onCurrentPasswordChange(e.target.value)}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-negativo focus:outline-none focus:ring-2 focus:ring-negativo"
               placeholder="Ingresa tu contraseña actual"
             />
@@ -88,7 +73,7 @@ export default function PasswordSecurityCard({ lastPasswordChangeDays }: Props) 
             <input
               type="password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => onNewPasswordChange(e.target.value)}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-negativo focus:outline-none focus:ring-2 focus:ring-negativo"
               placeholder="Ingresa tu nueva contraseña"
             />
@@ -100,7 +85,7 @@ export default function PasswordSecurityCard({ lastPasswordChangeDays }: Props) 
             <input
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => onConfirmPasswordChange(e.target.value)}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-negativo focus:outline-none focus:ring-2 focus:ring-negativo"
               placeholder="Confirma tu nueva contraseña"
             />
@@ -116,13 +101,13 @@ export default function PasswordSecurityCard({ lastPasswordChangeDays }: Props) 
           </div>
           <div className="grid grid-cols-2 gap-2 w-full">
             <button
-              onClick={handleUpdatePassword}
+              onClick={onUpdatePassword}
               className="bg-[#009966] text-white rounded-2xl px-4 py-3 hover:bg-[#008855] transition-colors"
             >
               Actualizar Contraseña
             </button>
             <button
-              onClick={handleCancelPassword}
+              onClick={onCancel}
               className="border-2 border-gray-700/50 text-gray-700 rounded-2xl px-4 py-3 hover:bg-gray-100 transition-colors"
             >
               Cancelar

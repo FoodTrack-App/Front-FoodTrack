@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Header from "@/components/admin/Header";
 import NavTabs from "@/components/mesero/NavTabs";
 
-export default function MeseroPage() {
+export default function MeseroAccountsPage() {
   const router = useRouter();
 
   useEffect(() => {
@@ -28,13 +28,12 @@ export default function MeseroPage() {
       <NavTabs />
       <main className="m-10 flex flex-col gap-8">
         <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh]">
-          <img className="w-36 md:w-44" src="/FoodTrack.svg" alt="FoodTrack logo" />
           <h1 className="text-gray-800 text-3xl font-actor font-medium">
-            Gestión de Platillos
+            Gestión de Cuentas
           </h1>
           <div className="mt-8 p-6 bg-Blue-100 rounded-lg max-w-2xl">
             <p className="text-gray-700 text-center">
-              Esta sección está en desarrollo. Aquí podrás ver el menú y tomar pedidos.
+              Esta sección está en desarrollo. Aquí podrás ver y gestionar las cuentas de tus mesas.
             </p>
           </div>
         </div>

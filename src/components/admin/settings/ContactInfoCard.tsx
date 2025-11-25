@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import CardContent from "@/components/admin/Cards";
 import { LetterOutline, PhoneOutline, UserOutline } from "solar-icon-set";
 
@@ -7,54 +6,31 @@ type Props = {
   initialFullName: string;
   initialEmail: string;
   initialPhone: string;
+  isEditing: boolean;
+  onEdit: () => void;
+  onSave: () => void;
+  onCancel: () => void;
+  fullName: string;
+  email: string;
+  phone: string;
+  onFullNameChange: (value: string) => void;
+  onEmailChange: (value: string) => void;
+  onPhoneChange: (value: string) => void;
 };
 
-export default function ContactInfoCard({ initialFullName, initialEmail, initialPhone }: Props) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [fullName, setFullName] = useState(initialFullName);
-  const [email, setEmail] = useState(initialEmail);
-  const [phone, setPhone] = useState(initialPhone);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [phoneError, setPhoneError] = useState<string | null>(null);
-
+export default function ContactInfoCard({ 
+  isEditing,
+  onEdit,
+  onSave,
+  onCancel,
+  fullName,
+  email,
+  phone,
+  onFullNameChange,
+  onEmailChange,
+  onPhoneChange,
+}: Props) {
   const PHONE_MAX_DIGITS = 10;
-
-  const handleSave = () => {
-    if (!fullName.trim() || fullName.trim().length < 3) {
-      alert("El nombre completo debe tener al menos 3 caracteres");
-      return;
-    }
-
-    const isValidEmail = /^\S+@\S+\.\S+$/.test(email.trim());
-    const digits = phone.replace(/\D/g, "");
-    const isValidPhone = digits.length >= 8 && digits.length <= PHONE_MAX_DIGITS;
-
-    setEmailError(isValidEmail ? null : "Ingresa un correo electrónico válido");
-    setPhoneError(
-      isValidPhone ? null : `Ingresa un número de teléfono válido (8 a ${PHONE_MAX_DIGITS} dígitos)`
-    );
-
-    if (!isValidEmail || !isValidPhone) return;
-
-    console.log("[Configuración - Guardar]", {
-      fullName: fullName.trim(),
-      email: email.trim(),
-      phone: phone.trim(),
-    });
-
-    setIsEditing(false);
-    setEmailError(null);
-    setPhoneError(null);
-  };
-
-  const handleCancel = () => {
-    setFullName(initialFullName);
-    setEmail(initialEmail);
-    setPhone(initialPhone);
-    setIsEditing(false);
-    setEmailError(null);
-    setPhoneError(null);
-  };
 
   return (
     <CardContent
@@ -62,9 +38,9 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
       title="Información de Contacto"
       icon={<LetterOutline />}
       isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={handleSave}
-      onCancel={handleCancel}
+      onEdit={onEdit}
+      onSave={onSave}
+      onCancel={onCancel}
     >
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
@@ -76,7 +52,7 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
             <input
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => onFullNameChange(e.target.value)}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-Blue-700 focus:outline-none focus:ring-2 focus:ring-Blue-700"
               placeholder="Ingresa tu nombre completo"
             />
@@ -95,13 +71,7 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
             <input
               type="email"
               value={email}
-              onChange={(e) => {
-                const v = e.target.value;
-                setEmail(v);
-                const ok = /^\S+@\S+\.\S+$/.test(v.trim());
-                setEmailError(ok ? null : "Ingresa un correo electrónico válido");
-              }}
-              aria-invalid={!!emailError}
+              onChange={(e) => onEmailChange(e.target.value)}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-Blue-700 focus:outline-none focus:ring-2 focus:ring-Blue-700"
               placeholder="correo@ejemplo.com"
             />
@@ -109,9 +79,6 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
             <p className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-gray-100 rounded-2xl p-3 border-gray-300">
               {email}
             </p>
-          )}
-          {isEditing && emailError && (
-            <p className="text-negativo text-sm">{emailError}</p>
           )}
         </div>
         <div className="flex flex-col gap-2">
@@ -126,12 +93,7 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
               onChange={(e) => {
                 const v = e.target.value;
                 const digitsOnly = v.replace(/\D/g, "").slice(0, PHONE_MAX_DIGITS);
-                setPhone(digitsOnly);
-                setPhoneError(
-                  digitsOnly.length >= 8 && digitsOnly.length <= PHONE_MAX_DIGITS
-                    ? null
-                    : `Ingresa un número de teléfono válido (8 a ${PHONE_MAX_DIGITS} dígitos)`
-                );
+                onPhoneChange(digitsOnly);
               }}
               onKeyDown={(e) => {
                 const allowed = new Set([
@@ -157,7 +119,6 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
               inputMode="numeric"
               pattern="\\d*"
               maxLength={PHONE_MAX_DIGITS}
-              aria-invalid={!!phoneError}
               className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-white rounded-2xl p-3 border-Blue-700 focus:outline-none focus:ring-2 focus:ring-Blue-700"
               placeholder="+52 55 1234 5678"
             />
@@ -165,9 +126,6 @@ export default function ContactInfoCard({ initialFullName, initialEmail, initial
             <p className="text-navy-900 font-sans text-base not-italic font-normal leading-6 border-1 bg-gray-100 rounded-2xl p-3 border-gray-300">
               {phone}
             </p>
-          )}
-          {isEditing && phoneError && (
-            <p className="text-negativo text-sm">{phoneError}</p>
           )}
         </div>
       </div>

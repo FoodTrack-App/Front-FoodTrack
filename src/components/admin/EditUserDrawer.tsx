@@ -4,15 +4,17 @@ import { useState, useEffect } from "react";
 import { DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "../ui/drawer";
 
 type User = {
-    id: number;
-    name: string;
-    role: 'Mesero' | 'Cajero';
+    _id: string;
+    usuario: string;
+    rol: 'Mesero' | 'Cajero';
+    telefonoContacto?: string;
 };
 
 type EditUserDrawerProps = {
     user?: User | null;
-    onSave?: (updated: User, newPassword?: string) => void; // nueva contraseña opcional
-    onDelete?: (id: number) => void;
+    onSave?: (updated: User) => void;
+    onDelete?: (id: string) => void;
+    onError?: (message: string) => void;
 };
 
 function Input({ titulo, holder, type = "text", value, onChange }: { titulo: string, holder: string, type?: "text" | "password" | "select" | "number", value?: string, onChange?: (value: string) => void }) {
@@ -48,22 +50,19 @@ function Input({ titulo, holder, type = "text", value, onChange }: { titulo: str
     )
 }
 
-export default function EditUserDrawer({ user, onSave, onDelete }: EditUserDrawerProps) {
+export default function EditUserDrawer({ user, onSave, onDelete, onError }: EditUserDrawerProps) {
     const [name, setName] = useState("");
-    const [password, setPassword] = useState("");
-    const [passwordRepeat, setPasswordRepeat] = useState("");
     const [role, setRole] = useState<"" | "Mesero" | "Cajero">("");
-    // Ya no se edita teléfono, se mantiene el original del usuario
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [errors, setErrors] = useState<{ name?: string; role?: string; phone?: string; password?: string; passwordRepeat?: string }>({});
+    const [errors, setErrors] = useState<{ name?: string; role?: string }>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (user) {
-            setName(user.name);
-            setRole(user.role);
-            setPassword("");
-            setPasswordRepeat("");
+            setName(user.usuario);
+            setRole(user.rol);
             setErrors({});
+            setShowDeleteModal(false);
         }
     }, [user]);
 
@@ -77,45 +76,67 @@ export default function EditUserDrawer({ user, onSave, onDelete }: EditUserDrawe
         const newErrors: typeof errors = {};
         if (!name.trim()) newErrors.name = "Nombre requerido";
         if (!role) newErrors.role = "Rol requerido";
-        if (password || passwordRepeat) {
-            if (password.length < 8) newErrors.password = "Mínimo 8 caracteres";
-            if (password !== passwordRepeat) newErrors.passwordRepeat = "No coincide";
-        }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!user) return;
         if (!validate()) return;
-        const updated: User = {
-            id: user.id,
-            name,
-            role: role as 'Mesero' | 'Cajero'
-        };
-        const newPasswordToSend = password.length > 0 ? password : undefined;
-        if (newPasswordToSend) {
-            console.log('[Usuario - Editar]', {
-                ...updated,
-                password: '*'.repeat(newPasswordToSend.length)
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`/api/users/${user._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    usuario: name,
+                    rol: role,
+                }),
             });
-            onSave?.(updated, newPasswordToSend);
-        } else {
-            console.log('[Usuario - Editar]', updated);
-            // No se envía contraseña porque no fue modificada
-            onSave?.(updated);
+
+            const data = await response.json();
+
+            if (data.success) {
+                onSave?.(data.data);
+            } else {
+                onError?.(data.message || "Error al actualizar usuario");
+            }
+        } catch (error) {
+            console.error("Error al actualizar usuario:", error);
+            onError?.("Error de conexión al actualizar usuario");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handleDeleteUser = () => {
-        if (user) {
-            console.log("[Usuario - Eliminar]", user.id);
-            onDelete?.(user.id);
+    const handleDelete = async () => {
+        if (!user) return;
+
+        setIsSubmitting(true);
+
+        try {
+            const response = await fetch(`/api/users/${user._id}`, {
+                method: "DELETE",
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                onDelete?.(user._id);
+            } else {
+                onError?.(data.message || "Error al eliminar usuario");
+            }
+        } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+            onError?.("Error de conexión al eliminar usuario");
+        } finally {
+            setIsSubmitting(false);
         }
-        setShowDeleteModal(false);
     };
     return (
-        <DrawerContent>
+        <DrawerContent onPointerDownOutside={() => setShowDeleteModal(false)} onEscapeKeyDown={() => setShowDeleteModal(false)}>
             <DrawerHeader className="px-8 py-6 bg-navy-900 md:sticky md:top-0 md:z-10">
                 <DrawerTitle className="text-white font-arial text-[24px] font-bold leading-[32px]">
                     Editar Usuario
@@ -128,20 +149,6 @@ export default function EditUserDrawer({ user, onSave, onDelete }: EditUserDrawe
                     value={name}
                     onChange={setName} />
                 {errors.name && <p className="text-negativo text-sm">{errors.name}</p>}
-                <Input
-                    titulo="Nueva contraseña"
-                    holder="Mínimo 8 caracteres"
-                    type="password"
-                    value={password}
-                    onChange={setPassword} />
-                {errors.password && <p className="text-negativo text-sm">{errors.password}</p>}
-                <Input
-                    titulo="Repetir nueva contraseña"
-                    holder="Mínimo 8 caracteres"
-                    type="password"
-                    value={passwordRepeat}
-                    onChange={setPasswordRepeat} />
-                {errors.passwordRepeat && <p className="text-negativo text-sm">{errors.passwordRepeat}</p>}
                 <Input
                     titulo="Rol *"
                     holder="Seleccionar rol"
@@ -198,10 +205,11 @@ export default function EditUserDrawer({ user, onSave, onDelete }: EditUserDrawe
                                 Cancelar
                             </button>
                             <button
-                                onClick={handleDeleteUser}
-                                className="flex-1 px-4 py-3 rounded-2xl bg-negativo text-white hover:bg-negativo/90"
+                                onClick={handleDelete}
+                                disabled={isSubmitting}
+                                className="flex-1 px-4 py-3 rounded-2xl bg-negativo text-white hover:bg-negativo/90 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                Eliminar
+                                {isSubmitting ? "Eliminando..." : "Eliminar"}
                             </button>
                         </div>
                     </div>
@@ -210,14 +218,17 @@ export default function EditUserDrawer({ user, onSave, onDelete }: EditUserDrawe
 
             <DrawerFooter className="px-8 gap-4 py-4 flex flex-row justify-between items-center border-t-gray-500 border-t-2 w-full bg-gray-100">
                 <DrawerClose asChild>
-                    <div className="w-fit text-gray-700 flex gap-2 items-center border-gray-700/50 border-2 rounded-2xl  py-4 px-3">
+                    <div 
+                        onClick={() => setShowDeleteModal(false)}
+                        className="w-fit text-gray-700 flex gap-2 items-center border-gray-700/50 border-2 rounded-2xl  py-4 px-3 cursor-pointer">
                         Cancelar
                     </div>
                 </DrawerClose>
                 <button
                     onClick={handleSave}
-                    className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white">
-                    Guardar Cambios
+                    disabled={isSubmitting}
+                    className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isSubmitting ? "Guardando..." : "Guardar Cambios"}
                 </button>
             </DrawerFooter>
         </DrawerContent>

@@ -1,15 +1,17 @@
 import { Bill } from "@solar-icons/react";
-import { PhoneOutline } from "solar-icon-set";
+import { PhoneOutline, UserOutline } from "solar-icon-set";
 
 type Props = {
     userName: string;
+    contactName?: string;
     userRol: 'Mesero' | 'Cajero';
     userPhone: number;
     onClick?: () => void;
 };
 
-export default function UserCard({ userName, userRol, userPhone, onClick }: Props) {
-    const initials = userName
+export default function UserCard({ userName, contactName, userRol, userPhone, onClick }: Props) {
+    const displayName = contactName || userName;
+    const initials = displayName
         .split(' ')
         .map(word => word[0])
         .join('')
@@ -26,8 +28,12 @@ export default function UserCard({ userName, userRol, userPhone, onClick }: Prop
                 </p>
             </div>
             <p className="text-navy-900 font-sans text-base not-italic font-normal leading-6">
-                {userName}
+                {displayName}
             </p>
+            <div className="text-gray-600 font-sans text-sm not-italic font-normal leading-5 flex flex-row gap-1.5 items-center">
+                <UserOutline className="h-4 w-4" />
+                {userName}
+            </div>
             <div className="flex flex-row gap-2 items-center">
                 {userRol === 'Mesero' && <img src="/spoon-and-fork.svg" className="h-4.5 w-4.5" />}
                 {userRol === 'Cajero' && <Bill weight="Outline" className="h-4.5 w-4.5" />}

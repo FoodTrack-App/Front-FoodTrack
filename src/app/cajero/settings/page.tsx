@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import NavTabs from "@/components/admin/NavTabs";
+import NavTabs from "@/components/cajero/NavTabs";
 import Header from "@/components/admin/Header";
 import IconBox from "@/components/ui/iconBox";
 import { WalletMoneyOutline } from "solar-icon-set";
@@ -58,10 +58,6 @@ export default function SettingsPage() {
       const userInfo = JSON.parse(user);
       const restaurantInfo = restaurant ? JSON.parse(restaurant) : null;
 
-      console.log("Usuario desde localStorage:", userInfo);
-      console.log("ID del usuario:", userInfo._id || userInfo.id);
-
-      // Si no hay _id, mostrar error y pedir re-login
       if (!userInfo._id && !userInfo.id) {
         setErrorMessage("Sesión inválida. Por favor inicia sesión nuevamente.");
         setShowErrorModal(true);
@@ -114,16 +110,12 @@ export default function SettingsPage() {
       }
 
       const userId = userData._id || userData.id;
-      console.log("Actualizando contacto para userId:", userId);
-      console.log("Datos a enviar:", contactForm);
 
       const response = await fetch(`/api/user/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(contactForm),
       });
-      
-      console.log("Response status:", response.status);
 
       const data = await response.json();
 
@@ -167,7 +159,6 @@ export default function SettingsPage() {
       }
 
       const userId = userData._id || userData.id;
-      console.log("Cambiando contraseña para userId:", userId);
       
       const response = await fetch(`/api/user/${userId}`, {
         method: "PUT",
@@ -177,8 +168,6 @@ export default function SettingsPage() {
           newPassword: passwordForm.newPassword,
         }),
       });
-      
-      console.log("Response status:", response.status);
 
       const data = await response.json();
 

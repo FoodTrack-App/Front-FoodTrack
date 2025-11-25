@@ -3,6 +3,12 @@ import { ShieldMinimalisticOutline, UserOutline } from "solar-icon-set";
 import { useRef, useState } from "react";
 import { DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "../ui/drawer";
 
+type AddUserDrawerProps = {
+    claveRestaurante: string;
+    onUserAdded: (user: any) => void;
+    onError: (message: string) => void;
+};
+
 function Input({ titulo, holder, type = "text", value, onChange, error }: { titulo: string, holder: string, type?: "text" | "password" | "select", value?: string, onChange?: (value: string) => void, error?: string | null }) {
     return (
         <div className="gap-2 flex flex-col">
@@ -39,7 +45,7 @@ function Input({ titulo, holder, type = "text", value, onChange, error }: { titu
     )
 }
 
-export default function AddUserDrawer() {
+export default function AddUserDrawer({ claveRestaurante, onUserAdded, onError }: AddUserDrawerProps) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,8 +55,20 @@ export default function AddUserDrawer() {
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [confirmError, setConfirmError] = useState<string | null>(null);
     const [roleError, setRoleError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleAddUser = () => {
+    const clearForm = () => {
+        setUsername("");
+        setPassword("");
+        setConfirmPassword("");
+        setRole("");
+        setUsernameError(null);
+        setPasswordError(null);
+        setConfirmError(null);
+        setRoleError(null);
+    };
+
+    const handleAddUser = async () => {
         const name = username.trim();
         let hasError = false;
         if (!name) {
@@ -80,22 +98,35 @@ export default function AddUserDrawer() {
 
         if (hasError) return;
 
-        console.log("[Usuarios - Agregar]", {
-            username: name,
-            role,
-            password: "***",
-        });
+        setIsSubmitting(true);
 
-        closeRef.current?.click();
+        try {
+            const response = await fetch("/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    usuario: name,
+                    contraseña: password,
+                    rol: role,
+                    claveRestaurante: claveRestaurante,
+                }),
+            });
 
-        setUsername("");
-        setPassword("");
-        setConfirmPassword("");
-        setRole("");
-        setUsernameError(null);
-        setPasswordError(null);
-        setConfirmError(null);
-        setRoleError(null);
+            const data = await response.json();
+
+            if (data.success) {
+                onUserAdded(data.data);
+                closeRef.current?.click();
+                clearForm();
+            } else {
+                onError(data.message || "Error al crear usuario");
+            }
+        } catch (error) {
+            console.error("Error al crear usuario:", error);
+            onError("Error de conexión al crear usuario");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
     const description = role === "Mesero"
         ? "Puede tomar órdenes, gestionar mesas y ver comandas asignadas."
@@ -103,7 +134,7 @@ export default function AddUserDrawer() {
             ? "Puede cobrar pedidos, gestionar caja y ver pagos."
             : "Selecciona un rol para ver su descripción.";
     return (
-        <DrawerContent className="bg-gray-50 flex flex-col">
+        <DrawerContent className="bg-gray-50 flex flex-col" onPointerDownOutside={clearForm} onEscapeKeyDown={clearForm}>
             <DrawerHeader className="px-8 py-6 bg-navy-900 md:sticky md:top-0 md:z-10">
                 <DrawerTitle className="text-white font-arial text-[24px] font-bold leading-[32px]">
                     Agregar Nuevo Usuarios
@@ -161,12 +192,18 @@ export default function AddUserDrawer() {
                     <button ref={closeRef} className="hidden" aria-hidden="true" />
                 </DrawerClose>
                 <DrawerClose asChild>
-                    <div className="w-fit text-gray-700 flex gap-2 items-center border-gray-700/50 border-2 rounded-2xl  py-4 px-3">
+                    <div 
+                        onClick={clearForm}
+                        className="w-fit text-gray-700 flex gap-2 items-center border-gray-700/50 border-2 rounded-2xl  py-4 px-3 cursor-pointer">
                         Cancelar
                     </div>
                 </DrawerClose>
-                <button onClick={handleAddUser} className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white">
-                    Agregar Usuario
+                <button 
+                    onClick={handleAddUser} 
+                    disabled={isSubmitting}
+                    className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isSubmitting ? "Agregando..." : "Agregar Usuario"}
                 </button>
             </DrawerFooter>
         </DrawerContent>
