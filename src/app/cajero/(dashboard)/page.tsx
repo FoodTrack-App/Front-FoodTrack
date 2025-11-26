@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import Header from "@/components/admin/Header";
-import NavTabs from "@/components/mesero/NavTabs";
+import DashboardShell from "@/components/admin/DashboardShell";
 import ProductGrid from "@/components/admin/ProductGrid";
 
 export type Product = {
@@ -18,7 +17,7 @@ export type Product = {
   fechaRegistro: string;
 };
 
-export default function MeseroPage() {
+export default function CajeroDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -54,25 +53,20 @@ export default function MeseroPage() {
   }, [loadProducts]);
 
   return (
-    <>
-      <Header 
-        placeholder={`Buscar entre ${products.length} productos...`} 
-        value={search} 
-        onSearch={setSearch} 
+    <DashboardShell 
+      search={search} 
+      onSearchChange={setSearch}
+      productsCount={products.length}
+      onProductAdded={loadProducts}
+      isCajero={true}
+    >
+      <ProductGrid 
+        products={products} 
+        searchTerm={search} 
+        loading={loading}
+        onProductUpdated={loadProducts}
+        onProductDeleted={loadProducts}
       />
-      <main className="flex flex-col">
-        <NavTabs />
-        <div className="py-6 md:py-8 px-4 md:px-10">
-          <ProductGrid 
-            products={products} 
-            searchTerm={search} 
-            loading={loading}
-            onProductUpdated={loadProducts}
-            onProductDeleted={loadProducts}
-            readOnly={true}
-          />
-        </div>
-      </main>
-    </>
+    </DashboardShell>
   );
 }

@@ -67,9 +67,10 @@ type Props = {
     onProductUpdated?: () => void;
     onProductDeleted?: () => void;
     onModalStateChange?: (isOpen: boolean) => void;
+    readOnly?: boolean;
 };
 
-export default function ProductDetailsDrawerContent({ product, onProductUpdated, onProductDeleted, onModalStateChange }: Props) {
+export default function ProductDetailsDrawerContent({ product, onProductUpdated, onProductDeleted, onModalStateChange, readOnly = false }: Props) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -601,20 +602,22 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                     </p>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                    <SubTitle icon={<GalleryOutline />} title="Cambiar Imagen (Opcional)" />
-                    <FileDropzone
-                        accept="image/png,image/jpeg,image/gif"
-                        maxSizeMB={5}
-                        onFileSelect={(file) => {
-                            setImageFile((Array.isArray(file) ? file[0] : file) ?? null);
-                        }}
-                        className="bg-gray-100"
-                    />
-                    {imageFile && (
-                        <p className="text-sm text-gray-600">Nueva imagen seleccionada: {imageFile.name}</p>
-                    )}
-                </div>
+                {!readOnly && (
+                    <div className="flex flex-col gap-2">
+                        <SubTitle icon={<GalleryOutline />} title="Cambiar Imagen (Opcional)" />
+                        <FileDropzone
+                            accept="image/png,image/jpeg,image/gif"
+                            maxSizeMB={5}
+                            onFileSelect={(file) => {
+                                setImageFile((Array.isArray(file) ? file[0] : file) ?? null);
+                            }}
+                            className="bg-gray-100"
+                        />
+                        {imageFile && (
+                            <p className="text-sm text-gray-600">Nueva imagen seleccionada: {imageFile.name}</p>
+                        )}
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-2">
                     <SubTitle icon={<TagOutline />} title="Nombre del Producto" />
@@ -625,7 +628,8 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                         onChange={(e) => setProductName(e.target.value)}
                         placeholder="Ej. Tacos al Pastor"
                         aria-invalid={!!errors.productName}
-                        className={`bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 border ${errors.productName ? "border-negativo" : "border-gray-300"}`}
+                        disabled={readOnly}
+                        className={`bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 border ${errors.productName ? "border-negativo" : "border-gray-300"} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
                     />
                     {errors.productName && (
                         <p className="text-negativo text-sm">{errors.productName}</p>
@@ -639,7 +643,8 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe el producto..."
-                        className="bg-gray-100 border-gray-300 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 resize-none  min-h-[48px] leading-6 h-full"
+                        disabled={readOnly}
+                        className={`bg-gray-100 border-gray-300 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 resize-none  min-h-[48px] leading-6 h-full ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
                         rows={5}
                     />
                 </div>
@@ -653,7 +658,8 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                         onChange={(e) => setStock(e.target.value)}
                         placeholder="Ej. 10"
                         aria-invalid={!!errors.stock}
-                        className={`bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 border ${errors.stock ? "border-negativo" : "border-gray-300"}`}
+                        disabled={readOnly}
+                        className={`bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 border ${errors.stock ? "border-negativo" : "border-gray-300"} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
                         step={1}
                         onKeyDown={handleIntegerKeyDown}
                     />
@@ -669,16 +675,17 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                             value={selectedCategory}
                             onChange={handleCategoryChange}
                             aria-invalid={!!errors.category}
-                            className={`flex-grow bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 appearance-none border ${errors.category ? "border-negativo" : "border-gray-300"}`}
+                            disabled={readOnly}
+                            className={`flex-grow bg-gray-100 rounded-2xl px-4 py-3 text-gray-900 placeholder:text-gray-500 appearance-none border ${errors.category ? "border-negativo" : "border-gray-300"} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
                         >
                             {categories.map((cat) => (
                                 <option key={cat._id} value={cat.nombreCategoria}>
                                     {cat.nombreCategoria}
                                 </option>
                             ))}
-                            <option value={OTHER_CATEGORY}>— Otra / Agregar Nueva...</option>
+                            {!readOnly && <option value={OTHER_CATEGORY}>— Otra / Agregar Nueva...</option>}
                         </select>
-                        {selectedCategory && selectedCategory !== OTHER_CATEGORY && (
+                        {!readOnly && selectedCategory && selectedCategory !== OTHER_CATEGORY && (
                             <button
                                 type="button"
                                 onClick={onDeleteCategoryClick}
@@ -713,34 +720,8 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 w-full">
-                    <div className="gap-2 flex flex-col col-span-1">
-                        <SubTitle icon={<DollarOutline />} title="Costo" />
-                        <div className="relative">
-                            <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-900">
-                                $
-                            </span>
-                            <input
-                                type="number"
-                                autoCapitalize="off"
-                                value={cost}
-                                onChange={(e) => setCost(e.target.value)}
-                                placeholder="Ej. 10.00"
-                                aria-invalid={!!errors.cost}
-                                className={`bg-gray-100 rounded-2xl px-4 py-3 pl-8 pr-16 text-gray-900 placeholder:text-gray-500 w-full border ${errors.cost ? "border-negativo" : "border-gray-300"}`}
-                                step="0.01"
-                                min="0"
-                                onKeyDown={handleMonetaryKeyDown}
-                            />
-                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                                MXN
-                            </span>
-                        </div>
-                        {errors.cost && (
-                            <p className="text-negativo text-sm">{errors.cost}</p>
-                        )}
-                    </div>
-                    <div className=" gap-2 flex flex-col col-span-1">
+                {readOnly ? (
+                    <div className="flex flex-col gap-2">
                         <SubTitle
                             icon={<DollarMinimalisticOutline />}
                             title="Precio de Venta"
@@ -756,7 +737,8 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                                 onChange={(e) => setPrice(e.target.value)}
                                 placeholder="Ej. 15.00"
                                 aria-invalid={!!errors.price}
-                                className={`bg-Blue-200/20 rounded-2xl px-4 py-3 pl-8 pr-16 text-Blue-700 placeholder:text-gray-500 w-full border ${errors.price ? "border-negativo" : "border-Blue-200"}`}
+                                disabled={readOnly}
+                                className={`bg-Blue-200/20 rounded-2xl px-4 py-3 pl-8 pr-16 text-Blue-700 placeholder:text-gray-500 w-full border ${errors.price ? "border-negativo" : "border-Blue-200"} ${readOnly ? "cursor-not-allowed opacity-60" : ""}`}
                                 step="0.01"
                                 min="0"
                                 onKeyDown={handleMonetaryKeyDown}
@@ -769,16 +751,76 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                             <p className="text-negativo text-sm">{errors.price}</p>
                         )}
                     </div>
-                </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-2 gap-4 w-full">
+                            <div className="gap-2 flex flex-col col-span-1">
+                                <SubTitle icon={<DollarOutline />} title="Costo" />
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-900">
+                                        $
+                                    </span>
+                                    <input
+                                        type="number"
+                                        autoCapitalize="off"
+                                        value={cost}
+                                        onChange={(e) => setCost(e.target.value)}
+                                        placeholder="Ej. 10.00"
+                                        aria-invalid={!!errors.cost}
+                                        className={`bg-gray-100 rounded-2xl px-4 py-3 pl-8 pr-16 text-gray-900 placeholder:text-gray-500 w-full border ${errors.cost ? "border-negativo" : "border-gray-300"}`}
+                                        step="0.01"
+                                        min="0"
+                                        onKeyDown={handleMonetaryKeyDown}
+                                    />
+                                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                                        MXN
+                                    </span>
+                                </div>
+                                {errors.cost && (
+                                    <p className="text-negativo text-sm">{errors.cost}</p>
+                                )}
+                            </div>
+                            <div className=" gap-2 flex flex-col col-span-1">
+                                <SubTitle
+                                    icon={<DollarMinimalisticOutline />}
+                                    title="Precio de Venta"
+                                />
+                                <div className="relative text-Blue-700">
+                                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-Blue-700">
+                                        $
+                                    </span>
+                                    <input
+                                        type="number"
+                                        autoCapitalize="off"
+                                        value={price}
+                                        onChange={(e) => setPrice(e.target.value)}
+                                        placeholder="Ej. 15.00"
+                                        aria-invalid={!!errors.price}
+                                        className={`bg-Blue-200/20 rounded-2xl px-4 py-3 pl-8 pr-16 text-Blue-700 placeholder:text-gray-500 w-full border ${errors.price ? "border-negativo" : "border-Blue-200"}`}
+                                        step="0.01"
+                                        min="0"
+                                        onKeyDown={handleMonetaryKeyDown}
+                                    />
+                                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-Blue-700 text-sm">
+                                        MXN
+                                    </span>
+                                </div>
+                                {errors.price && (
+                                    <p className="text-negativo text-sm">{errors.price}</p>
+                                )}
+                            </div>
+                        </div>
 
-                <div className="grid grid-cols-3 gap-2 items-start self-stretch px-[16px] py-[12px] rounded-2xl border border-Blue-200 bg-Blue-200/20">
-                    <p className="text-navy-900 font-arial text-[16px] font-normal leading-[24px] col-span-2">
-                        Margen de Ganancia
-                    </p>
-                    <p className="text-Blue-700 font-arial text-[16px] font-normal leading-[24px] col-span-1">
-                        {margin.toFixed(1)}%
-                    </p>
-                </div>
+                        <div className="grid grid-cols-3 gap-2 items-start self-stretch px-[16px] py-[12px] rounded-2xl border border-Blue-200 bg-Blue-200/20">
+                            <p className="text-navy-900 font-arial text-[16px] font-normal leading-[24px] col-span-2">
+                                Margen de Ganancia
+                            </p>
+                            <p className="text-Blue-700 font-arial text-[16px] font-normal leading-[24px] col-span-1">
+                                {margin.toFixed(1)}%
+                            </p>
+                        </div>
+                    </>
+                )}
 
                 {/* Sección de Extras Existentes */}
                 <div className="flex flex-col gap-3">
@@ -788,72 +830,107 @@ export default function ProductDetailsDrawerContent({ product, onProductUpdated,
                         <div className="text-center py-4 text-gray-500">
                             Cargando extras...
                         </div>
-                    ) : existingExtras.length === 0 ? (
-                        <div className="text-center py-4 text-gray-500 bg-gray-100 rounded-xl">
-                            No hay extras para este producto
-                        </div>
-                    ) : (
-                        <div className="flex flex-col gap-2">
-                            {existingExtras.map((extra) => (
-                                <div
-                                    key={extra._id}
-                                    className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
-                                        extra.activo
-                                            ? "bg-white border-Blue-200"
-                                            : "bg-gray-50 border-gray-300 opacity-60"
-                                    }`}
-                                >
-                                    <div className="flex-1">
-                                        <p className={`font-semibold ${extra.activo ? "text-navy-900" : "text-gray-500"}`}>
-                                            {extra.nombreExtra}
-                                        </p>
-                                        <p className={`text-sm ${extra.activo ? "text-Blue-700" : "text-gray-400"}`}>
-                                            + ${extra.costoExtra.toFixed(2)} MXN
-                                        </p>
-                                    </div>
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <span className={`text-sm font-medium ${extra.activo ? "text-navy-900" : "text-gray-500"}`}>
-                                            {extra.activo ? "Activo" : "Inactivo"}
-                                        </span>
-                                        <div className="relative">
-                                            <input
-                                                type="checkbox"
-                                                checked={extra.activo}
-                                                onChange={() => toggleExtraStatus(extra._id, extra.activo)}
-                                                className="sr-only peer"
-                                            />
-                                            <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-Blue-200 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
-                                                extra.activo 
-                                                    ? "bg-Blue-700 after:translate-x-full after:border-white" 
-                                                    : "bg-gray-300"
-                                            }`}></div>
+                    ) : readOnly ? (
+                        // Vista para mesero: solo extras activos, sin toggle
+                        existingExtras.filter(extra => extra.activo).length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 bg-gray-100 rounded-xl">
+                                No hay extras disponibles para este producto
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                {existingExtras.filter(extra => extra.activo).map((extra) => (
+                                    <div
+                                        key={extra._id}
+                                        className="flex items-center justify-between p-3 rounded-xl border-2 bg-white border-Blue-200"
+                                    >
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-navy-900">
+                                                {extra.nombreExtra}
+                                            </p>
+                                            <p className="text-sm text-Blue-700">
+                                                + ${extra.costoExtra.toFixed(2)} MXN
+                                            </p>
                                         </div>
-                                    </label>
-                                </div>
-                            ))}
-                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    ) : (
+                        // Vista para admin/cajero: todos los extras con toggle
+                        existingExtras.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500 bg-gray-100 rounded-xl">
+                                No hay extras para este producto
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-2">
+                                {existingExtras.map((extra) => (
+                                    <div
+                                        key={extra._id}
+                                        className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
+                                            extra.activo
+                                                ? "bg-white border-Blue-200"
+                                                : "bg-gray-50 border-gray-300 opacity-60"
+                                        }`}
+                                    >
+                                        <div className="flex-1">
+                                            <p className={`font-semibold ${extra.activo ? "text-navy-900" : "text-gray-500"}`}>
+                                                {extra.nombreExtra}
+                                            </p>
+                                            <p className={`text-sm ${extra.activo ? "text-Blue-700" : "text-gray-400"}`}>
+                                                + ${extra.costoExtra.toFixed(2)} MXN
+                                            </p>
+                                        </div>
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <span className={`text-sm font-medium ${extra.activo ? "text-navy-900" : "text-gray-500"}`}>
+                                                {extra.activo ? "Activo" : "Inactivo"}
+                                            </span>
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={extra.activo}
+                                                    onChange={() => toggleExtraStatus(extra._id, extra.activo)}
+                                                    className="sr-only peer"
+                                                />
+                                                <div className={`w-11 h-6 rounded-full peer peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-Blue-200 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all ${
+                                                    extra.activo 
+                                                        ? "bg-Blue-700 after:translate-x-full after:border-white" 
+                                                        : "bg-gray-300"
+                                                }`}></div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>
+                        )
                     )}
                 </div>
             </div>
-            <DrawerFooter className="px-8 gap-4 py-4 flex flex-row justify-between items-center border-t-gray-500 border-t-2 w-full bg-gray-100">
-                <button 
-                    onClick={handleDelete} 
-                    disabled={loading}
-                    className="w-fit text-negativo flex gap-2 items-center border-negativo/50 border-2 rounded-2xl py-4 px-3 disabled:opacity-50"
-                >
-                    <TrashBinTrashOutline />{loading ? "Eliminando..." : "Eliminar"}
-                </button>
-                <button 
-                    onClick={handleEdit} 
-                    disabled={loading}
-                    className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white disabled:opacity-50"
-                >
-                    {loading ? "Guardando..." : "Editar Producto"}
-                </button>
+            {!readOnly && (
+                <DrawerFooter className="px-8 gap-4 py-4 flex flex-row justify-between items-center border-t-gray-500 border-t-2 w-full bg-gray-100">
+                    <button 
+                        onClick={handleDelete} 
+                        disabled={loading}
+                        className="w-fit text-negativo flex gap-2 items-center border-negativo/50 border-2 rounded-2xl py-4 px-3 disabled:opacity-50"
+                    >
+                        <TrashBinTrashOutline />{loading ? "Eliminando..." : "Eliminar"}
+                    </button>
+                    <button 
+                        onClick={handleEdit} 
+                        disabled={loading}
+                        className="w-full bg-Blue-700 rounded-2xl py-4 px-3 text-white disabled:opacity-50"
+                    >
+                        {loading ? "Guardando..." : "Editar Producto"}
+                    </button>
+                    <DrawerClose asChild>
+                        <button ref={closeRef} className="hidden" aria-hidden onClick={clearErrors} />
+                    </DrawerClose>
+                </DrawerFooter>
+            )}
+            {readOnly && (
                 <DrawerClose asChild>
                     <button ref={closeRef} className="hidden" aria-hidden onClick={clearErrors} />
                 </DrawerClose>
-            </DrawerFooter>
+            )}
         </DrawerContent>
 
         {/* Modal de confirmación para eliminar categoría */}

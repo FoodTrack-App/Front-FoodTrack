@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import Header from "./Header";
-import NavTabs from "./NavTabs";
+import AdminNavTabs from "./NavTabs";
+import CajeroNavTabs from "../cajero/NavTabs";
 import { Drawer, DrawerTrigger } from "../ui/drawer";
 import ProductAddDrawerContent from "./ProductAddDrawerContent";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -12,11 +13,13 @@ type Props = {
   onSearchChange: (search: string) => void;
   productsCount: number;
   onProductAdded?: () => void;
+  isCajero?: boolean;
 };
 
-export default function DashboardShell({ children, search, onSearchChange, productsCount, onProductAdded }: Props) {
+export default function DashboardShell({ children, search, onSearchChange, productsCount, onProductAdded, isCajero = false }: Props) {
   const isMd = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = useState(false);
+  const NavTabs = isCajero ? CajeroNavTabs : AdminNavTabs;
 
   return (
     <Drawer direction={isMd ? "right" : "bottom"} open={open} onOpenChange={setOpen}>

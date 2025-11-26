@@ -39,6 +39,7 @@ export default function AccountsPage() {
             accountId={selectedAccountId}
             onClose={() => setSelectedAccountId(null)}
             onAccountClosed={handleAccountClosed}
+            isMesero={false}
           />
         </main>
       </>
@@ -62,6 +63,7 @@ export default function AccountsPage() {
                 onAccountClick={handleAccountClick}
                 onOpenNewTable={() => setShowOpenTableModal(true)}
                 refreshTrigger={refreshTrigger}
+                filterByMesero={false}
               />
             </TabsContent>
 
@@ -74,6 +76,7 @@ export default function AccountsPage() {
             isOpen={showOpenTableModal}
             onClose={() => setShowOpenTableModal(false)}
             onAccountCreated={handleAccountCreated}
+            isMesero={false}
           />
         </div>
       </main>

@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChatSquare2Outline,
   DollarOutline,
   ChefHatOutline,
   SettingsOutline,
@@ -12,7 +11,6 @@ import {
 const tabs = [
   { href: "/cajero", label: "Platillos", icon: ChefHatOutline },
   { href: "/cajero/accounts", label: "Cuentas", icon: WidgetOutline },
-  { href: "/cajero/reports", label: "Reportes", icon: ChatSquare2Outline },
   { href: "/cajero/cash", label: "Caja", icon: DollarOutline },
   { href: "/cajero/settings", label: "Ajustes", icon: SettingsOutline },
 ];

@@ -180,10 +180,9 @@ export default function ProductDetailModal({
                 </label>
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                   {activeExtras.map((extra) => (
-                    <button
+                    <label
                       key={extra._id}
-                      onClick={() => handleExtraToggle(extra._id)}
-                      className={`w-full flex items-center justify-between px-3 py-2 border rounded-xl text-left transition-colors ${
+                      className={`w-full flex items-center justify-between px-3 py-2 border rounded-xl cursor-pointer transition-colors ${
                         selectedExtras.has(extra._id)
                           ? "bg-indigo-50 border-indigo-200"
                           : "bg-white hover:bg-gray-50 border-gray-200"
@@ -199,7 +198,7 @@ export default function ProductDetailModal({
                       <span className="text-emerald-600 font-semibold text-sm">
                         +${extra.costoExtra.toFixed(2)}
                       </span>
-                    </button>
+                    </label>
                   ))}
                 </div>
               </div>

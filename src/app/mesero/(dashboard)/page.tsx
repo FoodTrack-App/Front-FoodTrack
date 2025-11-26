@@ -18,7 +18,7 @@ export type Product = {
   fechaRegistro: string;
 };
 
-export default function MeseroPage() {
+export default function MeseroDashboardPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

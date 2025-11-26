@@ -32,9 +32,10 @@ type Props = {
   loading?: boolean;
   onProductUpdated?: () => void;
   onProductDeleted?: () => void;
+  readOnly?: boolean;
 };
 
-export default function ProductGrid({ products, searchTerm = "", loading = false, onProductUpdated, onProductDeleted }: Props) {
+export default function ProductGrid({ products, searchTerm = "", loading = false, onProductUpdated, onProductDeleted, readOnly = false }: Props) {
   const [filter, setFilter] = useState<string>("Todos");
   const [categories, setCategories] = useState<string[]>(["Todos"]);
   const [open, setOpen] = useState(false);
@@ -110,6 +111,7 @@ export default function ProductGrid({ products, searchTerm = "", loading = false
         onProductUpdated={onProductUpdated}
         onProductDeleted={onProductDeleted}
         onModalStateChange={setIsModalOpen}
+        readOnly={readOnly}
       />
     </Drawer>
   );

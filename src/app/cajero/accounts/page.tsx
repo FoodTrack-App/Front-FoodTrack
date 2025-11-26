@@ -1,41 +1,83 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TableConfigPanel from "@/components/admin/TableConfigPanel";
+import ActiveAccountsGrid from "@/components/admin/ActiveAccountsGrid";
+import OpenTableModal from "@/components/admin/OpenTableModal";
+import AccountManagement from "@/components/admin/AccountManagement";
 import Header from "@/components/admin/Header";
 import NavTabs from "@/components/cajero/NavTabs";
 
 export default function CajeroAccountsPage() {
-  const router = useRouter();
+  const [activeTab, setActiveTab] = useState("accounts");
+  const [showOpenTableModal, setShowOpenTableModal] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    
-    const userInfo = JSON.parse(user);
-    if (userInfo.rol !== "Cajero") {
-      router.push("/login");
-      return;
-    }
-  }, [router]);
+  const handleAccountCreated = (accountId: string) => {
+    setRefreshTrigger((prev) => prev + 1);
+    setSelectedAccountId(accountId);
+  };
+
+  const handleAccountClosed = () => {
+    setSelectedAccountId(null);
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleAccountClick = (accountId: string) => {
+    setSelectedAccountId(accountId);
+  };
+
+  if (selectedAccountId) {
+    return (
+      <>
+        <Header placeholder="Buscar Mesa/ Pedido" value="" onSearch={() => {}} />
+        <main className="flex flex-col">
+          <NavTabs />
+          <AccountManagement
+            accountId={selectedAccountId}
+            onClose={() => setSelectedAccountId(null)}
+            onAccountClosed={handleAccountClosed}
+            isMesero={false}
+          />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
-      <Header showSearch={false} />
-      <NavTabs />
-      <main className="m-10 flex flex-col gap-8">
-        <div className="flex flex-col items-center justify-center gap-6 min-h-[60vh]">
-          <h1 className="text-gray-800 text-3xl font-actor font-medium">
-            Gestión de Cuentas
-          </h1>
-          <div className="mt-8 p-6 bg-Blue-100 rounded-lg max-w-2xl">
-            <p className="text-gray-700 text-center">
-              Esta sección está en desarrollo. Aquí podrás gestionar las cuentas de los clientes.
-            </p>
-          </div>
+      <Header placeholder="Buscar Mesa/ Pedido" value="" onSearch={() => {}} />
+      <main className="flex flex-col">
+        <NavTabs />
+        <div className="py-6 md:py-8 px-4 md:px-10">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="accounts">Cuentas Abiertas</TabsTrigger>
+              <TabsTrigger value="config">Configuración de Mesas</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="accounts">
+              <ActiveAccountsGrid
+                onAccountClick={handleAccountClick}
+                onOpenNewTable={() => setShowOpenTableModal(true)}
+                refreshTrigger={refreshTrigger}
+                filterByMesero={false}
+              />
+            </TabsContent>
+
+            <TabsContent value="config">
+              <TableConfigPanel />
+            </TabsContent>
+          </Tabs>
+
+          <OpenTableModal
+            isOpen={showOpenTableModal}
+            onClose={() => setShowOpenTableModal(false)}
+            onAccountCreated={handleAccountCreated}
+            isMesero={false}
+          />
         </div>
       </main>
     </>

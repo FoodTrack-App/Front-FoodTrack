@@ -24,12 +24,14 @@ interface OpenTableModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAccountCreated: (accountId: string) => void;
+  isMesero?: boolean;
 }
 
 export default function OpenTableModal({
   isOpen,
   onClose,
   onAccountCreated,
+  isMesero = false,
 }: OpenTableModalProps) {
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<string | null>(null); // puede ser número como string o 'custom'
@@ -40,20 +42,34 @@ export default function OpenTableModal({
   const [errorMessage, setErrorMessage] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const [claveRestaurante, setClaveRestaurante] = useState("");
+  const [currentUserName, setCurrentUserName] = useState("");
 
   useEffect(() => {
     const clave = localStorage.getItem("claveRestaurante");
     if (clave) {
       setClaveRestaurante(clave);
     }
-  }, []);
+
+    // Si es mesero, obtener su nombre automáticamente
+    if (isMesero) {
+      const user = localStorage.getItem("user");
+      if (user) {
+        const userInfo = JSON.parse(user);
+        const userName = userInfo.nombreContacto || userInfo.usuario || "";
+        setCurrentUserName(userName);
+        setMesero(userName);
+      }
+    }
+  }, [isMesero]);
 
   useEffect(() => {
     if (isOpen && claveRestaurante) {
       loadAvailableTables();
-      loadUsers();
+      if (!isMesero) {
+        loadUsers();
+      }
     }
-  }, [isOpen, claveRestaurante]);
+  }, [isOpen, claveRestaurante, isMesero]);
 
   const loadUsers = async () => {
     try {
@@ -205,29 +221,39 @@ export default function OpenTableModal({
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Mesero *</label>
-              <Select
-                value={mesero || ''}
-                onValueChange={(value) => setMesero(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccione un mesero" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.length === 0 ? (
-                    <div className="px-2 py-1 text-sm text-gray-500">No hay usuarios</div>
-                  ) : (
-                    users.map((user) => (
-                      <SelectItem key={user._id} value={user.nombreContacto || user.usuario}>
-                        {user.nombreContacto || user.usuario}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">Lista basada en usuarios del restaurante.</p>
-            </div>
+            {isMesero ? (
+              <div>
+                <label className="block text-sm font-medium mb-2">Mesero</label>
+                <div className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-700">
+                  {currentUserName || "Sin nombre"}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Asignado automáticamente a tu usuario.</p>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium mb-2">Mesero *</label>
+                <Select
+                  value={mesero || ''}
+                  onValueChange={(value) => setMesero(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccione un mesero" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.length === 0 ? (
+                      <div className="px-2 py-1 text-sm text-gray-500">No hay usuarios</div>
+                    ) : (
+                      users.map((user) => (
+                        <SelectItem key={user._id} value={user.nombreContacto || user.usuario}>
+                          {user.nombreContacto || user.usuario}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500 mt-1">Lista basada en usuarios del restaurante.</p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>

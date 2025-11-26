@@ -23,12 +23,14 @@ interface AccountManagementProps {
   accountId: string;
   onClose: () => void;
   onAccountClosed: () => void;
+  isMesero?: boolean;
 }
 
 export default function AccountManagement({
   accountId,
   onClose,
   onAccountClosed,
+  isMesero = false,
 }: AccountManagementProps) {
   const [account, setAccount] = useState<Account | null>(null);
   const [tempItems, setTempItems] = useState<TempOrderItem[]>([]);
@@ -462,21 +464,14 @@ export default function AccountManagement({
             </div>
           )}
 
-          {isFinalized && (
+          {isFinalized && !isMesero && (
             <div className="flex gap-2">
               <Button
                 onClick={handleReopenAccount}
-                className="flex-1"
                 variant="outline"
               >
                 <RotateCcw className="mr-2 h-5 w-5" />
                 Reabrir Cuenta
-              </Button>
-              <Button
-                onClick={() => setShowPaymentModal(true)}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                Cerrar Cuenta
               </Button>
             </div>
           )}

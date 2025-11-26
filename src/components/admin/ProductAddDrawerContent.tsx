@@ -371,16 +371,17 @@ export default function ProductAddDrawerContent({ onProductAdded }: ProductAddDr
                 return;
             }
 
-            // Preparar extras - sin validación estricta
+            // Preparar extras - filtrar solo los que tienen datos válidos
             const validExtras = extras
+                .filter(extra => extra.nombreExtra.trim() !== "" && extra.costoExtra.trim() !== "")
                 .map(extra => ({
                     nombreExtra: extra.nombreExtra.trim(),
                     costoExtra: parseFloat(extra.costoExtra.replace(",", ".")),
                     activo: true,
                 }));
 
-            console.log("✓ Extras a enviar:", extras.length);
-            console.log("✓ Extras array:", extras);
+            console.log("✓ Extras válidos a enviar:", validExtras.length);
+            console.log("✓ Extras array:", validExtras);
 
             // Crear FormData para el producto CON extras incluidos
             const formData = new FormData();
@@ -392,12 +393,12 @@ export default function ProductAddDrawerContent({ onProductAdded }: ProductAddDr
             formData.append("categoria", finalCategory);
             formData.append("claveRestaurante", localStorage.getItem("claveRestaurante") || "");
             
-            // CRÍTICO: Enviar extras como JSON string en campo de texto
+            // CRÍTICO: Enviar extras VÁLIDOS como JSON string en campo de texto
             // Multer procesa bien campos de texto, incluso con archivos
-            const extrasJSON = JSON.stringify(extras);
+            const extrasJSON = JSON.stringify(validExtras);
             formData.append("extrasData", extrasJSON); // Nombre diferente para evitar conflictos
             console.log("→ Extras JSON a enviar:", extrasJSON);
-            console.log("→ Cantidad de extras:", extras.length);
+            console.log("→ Cantidad de extras válidos:", validExtras.length);
             
             if (imageFile) {
                 formData.append("imagen", imageFile);
@@ -463,7 +464,7 @@ export default function ProductAddDrawerContent({ onProductAdded }: ProductAddDr
         } finally {
             setLoading(false);
         }
-    }, [productName, imageFile, stock, selectedCategory, newCategoryInput, cost, price, description, onProductAdded, loadCategories, resetForm]);
+    }, [productName, imageFile, stock, selectedCategory, newCategoryInput, cost, price, description, extras, onProductAdded, loadCategories, resetForm]);
 
     const handleSuccessModalClose = () => {
         setShowSuccessModal(false);

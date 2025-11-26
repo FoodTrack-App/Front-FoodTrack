@@ -10,21 +10,31 @@ interface ActiveAccountsGridProps {
   onAccountClick: (accountId: string) => void;
   onOpenNewTable: () => void;
   refreshTrigger?: number;
+  filterByMesero?: boolean;
 }
 
 export default function ActiveAccountsGrid({
   onAccountClick,
   onOpenNewTable,
   refreshTrigger,
+  filterByMesero = false,
 }: ActiveAccountsGridProps) {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   const [claveRestaurante, setClaveRestaurante] = useState("");
+  const [currentUserName, setCurrentUserName] = useState("");
 
   useEffect(() => {
     const clave = localStorage.getItem("claveRestaurante");
     if (clave) {
       setClaveRestaurante(clave);
+    }
+
+    // Obtener el nombre del usuario actual para filtrar
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userInfo = JSON.parse(user);
+      setCurrentUserName(userInfo.nombreContacto || userInfo.usuario || "");
     }
   }, []);
 
@@ -40,8 +50,14 @@ export default function ActiveAccountsGrid({
       );
       const data = await response.json();
       if (data.success) {
-        // Incluir cuentas abiertas y finalizadas
-        setAccounts(data.data);
+        // Si filterByMesero es true, filtrar solo cuentas del mesero actual
+        let filteredAccounts = data.data;
+        if (filterByMesero && currentUserName) {
+          filteredAccounts = data.data.filter(
+            (account: Account) => account.mesero === currentUserName
+          );
+        }
+        setAccounts(filteredAccounts);
       }
     } catch (error) {
       console.error("Error al cargar cuentas:", error);
@@ -72,7 +88,7 @@ export default function ActiveAccountsGrid({
       </div>
 
       {accounts.length === 0 ? (
-        <Card>
+        <Card className="bg-white">
           <CardContent className="py-12 text-center text-gray-500">
             <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
             <p className="text-lg">No hay cuentas abiertas</p>
