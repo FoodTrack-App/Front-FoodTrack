@@ -6,9 +6,9 @@ export async function GET(
 ) {
   try {
     const { userId } = await params;
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
-    const response = await fetch(`${BACKEND}/api/user/${userId}`, {
+    const response = await fetch(`${baseUrl}/user/${userId}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
@@ -30,9 +30,9 @@ export async function PUT(
   try {
     const { userId } = await params;
     const body = await req.json();
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
-    let endpoint = `/api/user/${userId}`;
+    let endpoint = `/user/${userId}`;
     
     // Determinar si es actualización de contacto o contraseña
     if (body.currentPassword && body.newPassword) {
@@ -41,7 +41,7 @@ export async function PUT(
       endpoint += "/contact";
     }
     
-    const response = await fetch(`${BACKEND}${endpoint}`, {
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

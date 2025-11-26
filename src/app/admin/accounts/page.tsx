@@ -1,49 +1,80 @@
 "use client";
-import CategoryButton from "@/components/admin/CategoryButton";
+
+import { useState, useEffect } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TableConfigPanel from "@/components/admin/TableConfigPanel";
+import ActiveAccountsGrid from "@/components/admin/ActiveAccountsGrid";
+import OpenTableModal from "@/components/admin/OpenTableModal";
+import AccountManagement from "@/components/admin/AccountManagement";
 import Header from "@/components/admin/Header";
 import NavTabs from "@/components/admin/NavTabs";
-import AccountCard from "@/components/admin/AccountCard";
-import { accounts as allAccounts, Account } from "@/data/accounts";
-import { useMemo, useState } from "react";
-
-const categories = ["Todos", "Mesas", "Barra", "Para Llevar"] as const;
 
 export default function AccountsPage() {
-  const [activeCategory, setActiveCategory] = useState<typeof categories[number]>("Todos");
-  const [search, setSearch] = useState("");
+  const [activeTab, setActiveTab] = useState("accounts");
+  const [showOpenTableModal, setShowOpenTableModal] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  const filtered = useMemo(() => {
-    const byCategory = activeCategory === "Todos" ? allAccounts : allAccounts.filter((a) => a.type === activeCategory);
-    if (!search) return byCategory;
-    const s = search.toLowerCase();
-    return byCategory.filter((a) => {
-      return (
-        (a.table ?? "").toLowerCase().includes(s) ||
-        a.waiter.toLowerCase().includes(s) ||
-        a.ticketNumber.toLowerCase().includes(s)
-      );
-    });
-  }, [activeCategory, search]);
+  const handleAccountCreated = (accountId: string) => {
+    setRefreshTrigger((prev) => prev + 1);
+    setSelectedAccountId(accountId);
+  };
+
+  const handleAccountClosed = () => {
+    setSelectedAccountId(null);
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleAccountClick = (accountId: string) => {
+    setSelectedAccountId(accountId);
+  };
+
+  if (selectedAccountId) {
+    return (
+      <>
+        <Header placeholder="Buscar Mesa/ Pedido" value="" onSearch={() => {}} />
+        <main className="flex flex-col">
+          <NavTabs />
+          <AccountManagement
+            accountId={selectedAccountId}
+            onClose={() => setSelectedAccountId(null)}
+            onAccountClosed={handleAccountClosed}
+          />
+        </main>
+      </>
+    );
+  }
 
   return (
     <>
-      <Header placeholder="Buscar Mesa/ Pedido" value={search} onSearch={setSearch} />
+      <Header placeholder="Buscar Mesa/ Pedido" value="" onSearch={() => {}} />
       <main className="flex flex-col">
         <NavTabs />
-        <div className="py-6 md:py-8 px-4 md:px-10 flex flex-col gap-5">
-          <div className="w-full overflow-x-auto">
-            <div className="flex flex-row gap-3 md:gap-4 w-max">
-            {categories.map((c) => (
-              <CategoryButton key={c} label={c} active={c === activeCategory} onClick={() => setActiveCategory(c)} />
-            ))}
-            </div>
-          </div>
+        <div className="py-6 md:py-8 px-4 md:px-10">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-6">
+              <TabsTrigger value="accounts">Cuentas Abiertas</TabsTrigger>
+              <TabsTrigger value="config">Configuración de Mesas</TabsTrigger>
+            </TabsList>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
-            {filtered.map((acc: Account) => (
-              <AccountCard key={acc.id} account={acc} />
-            ))}
-          </div>
+            <TabsContent value="accounts">
+              <ActiveAccountsGrid
+                onAccountClick={handleAccountClick}
+                onOpenNewTable={() => setShowOpenTableModal(true)}
+                refreshTrigger={refreshTrigger}
+              />
+            </TabsContent>
+
+            <TabsContent value="config">
+              <TableConfigPanel />
+            </TabsContent>
+          </Tabs>
+
+          <OpenTableModal
+            isOpen={showOpenTableModal}
+            onClose={() => setShowOpenTableModal(false)}
+            onAccountCreated={handleAccountCreated}
+          />
         </div>
       </main>
     </>

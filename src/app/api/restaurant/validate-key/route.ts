@@ -4,7 +4,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch("http://localhost:5000/api/restaurant/validate-key", {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    
+    const response = await fetch(`${baseUrl}/restaurant/validate-key`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -6,9 +6,9 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // Usar localhost directamente o variable de entorno
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-    const upstream = await fetch(`${BACKEND.replace(/\/$/, "")}/api/auth/login`, {
+    const upstream = await fetch(`${baseUrl}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

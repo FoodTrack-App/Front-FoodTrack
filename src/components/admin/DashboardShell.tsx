@@ -2,27 +2,32 @@
 import { useState } from "react";
 import Header from "./Header";
 import NavTabs from "./NavTabs";
-import ProductGrid from "./ProductGrid";
-import { products } from "@/data/products";
 import { Drawer, DrawerTrigger } from "../ui/drawer";
 import ProductAddDrawerContent from "./ProductAddDrawerContent";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 type Props = {
   children?: React.ReactNode;
+  search: string;
+  onSearchChange: (search: string) => void;
+  productsCount: number;
+  onProductAdded?: () => void;
 };
 
-export default function DashboardShell({ children }: Props) {
-  const [search, setSearch] = useState("");
+export default function DashboardShell({ children, search, onSearchChange, productsCount, onProductAdded }: Props) {
   const isMd = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = useState(false);
 
   return (
     <Drawer direction={isMd ? "right" : "bottom"} open={open} onOpenChange={setOpen}>
-      <Header placeholder={`Buscar entre ${products.length} productos...`} value={search} onSearch={setSearch} />
+      <Header 
+        placeholder={`Buscar entre ${productsCount} productos...`} 
+        value={search} 
+        onSearch={onSearchChange} 
+      />
       <main className="flex flex-col">
         <NavTabs />
-        {children ?? <ProductGrid searchTerm={search} />}
+        {children}
         <DrawerTrigger>
           <div className="fixed right-4 md:right-6 bottom-4 md:bottom-6 z-50">
             <div
@@ -36,7 +41,7 @@ export default function DashboardShell({ children }: Props) {
           </div>
         </DrawerTrigger>
       </main>
-      <ProductAddDrawerContent />
+      <ProductAddDrawerContent onProductAdded={onProductAdded} />
     </Drawer>
   );
 }

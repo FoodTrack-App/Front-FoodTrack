@@ -15,6 +15,7 @@ type Props = {
   method: "Efectivo" | "Tarjeta" | "Transferencia" | "Otro";
   amount: number;
   type: "ingreso" | "egreso";
+  isVenta?: boolean;
 };
 
 export default function MovementCard({
@@ -23,23 +24,33 @@ export default function MovementCard({
   method,
   amount,
   type,
+  isVenta = false,
 }: Props) {
   return (
     <div
-      className={`p-5 gap-5 flex flex-row items-center ${type === "ingreso"
+      className={`p-5 gap-5 flex flex-row items-center ${
+        isVenta 
+          ? "bg-white border-gray-300" 
+          : type === "ingreso"
           ? "bg-[#F0FDF4] border-[#A4F4CF]"
           : "bg-[#FFF1F2] border-[#FFC9C9]"
         } border-2 rounded-2xl`}
     >
       <div
-        className={`relative ${type === "ingreso"
+        className={`relative ${
+          isVenta
+            ? "bg-gray-700 text-white"
+            : type === "ingreso"
             ? "bg-[#00A63E] text-white"
             : "bg-[#EC003F] text-white"
           } p-4 rounded-2xl inline-flex items-center justify-center w-fit`}
       >
         <DollarOutline className="h-5 w-5" />
         <div
-          className={`absolute -top-2 -right-2 p-1 bg-white ${type === "ingreso" ? "text-[#009966]" : "text-[#EC003F]"
+          className={`absolute -top-2 -right-2 p-1 bg-white ${
+            isVenta 
+              ? "text-gray-700" 
+              : type === "ingreso" ? "text-[#009966]" : "text-[#EC003F]"
             } rounded-full w-6 h-6 flex items-center justify-center shadow-md`}
         >
           {type === "ingreso" ? (
@@ -75,13 +86,19 @@ export default function MovementCard({
       </div>
       <div className="w-full">
         <p
-          className={`${type === "ingreso" ? "text-[#004F3B]" : "text-[#82181A]"
+          className={`${
+            isVenta 
+              ? "text-gray-900" 
+              : type === "ingreso" ? "text-[#004F3B]" : "text-[#82181A]"
             } font-sans text-base font-normal leading-relaxed not-italic`}
         >
           {description}
         </p>
         <p
-          className={`font-sans text-base font-normal leading-relaxed not-italic ml-auto w-fit ${type === "ingreso" ? "text-[#007A55]" : "text-[#C10007]"
+          className={`font-sans text-base font-normal leading-relaxed not-italic ml-auto w-fit ${
+            isVenta 
+              ? "text-gray-700" 
+              : type === "ingreso" ? "text-[#007A55]" : "text-[#C10007]"
             }`}
         >
           {type === "ingreso" ? `+$${amount}` : `-$${Math.abs(amount)}`}
@@ -92,7 +109,8 @@ export default function MovementCard({
             <p className="text-[#464646]">{time}</p>
           </div>
           <div
-            className={`flex flex-row items-center w-fit px-3 gap-2 rounded-2xl ${method === "Efectivo"
+            className={`flex flex-row items-center w-fit px-3 gap-2 rounded-2xl ${
+              method === "Efectivo"
                 ? "bg-[#D0FAE5] text-[#007A55]"
                 : method === "Tarjeta"
                   ? "bg-[#EEF2FF] text-[#1E40AF]"

@@ -62,10 +62,8 @@ export function validateProduct(
         errors.productName = "El nombre es obligatorio (mín. 3 caracteres).";
     }
 
-    // Imagen (opcional según contexto)
-    if (opts.requireImage && !imageFile) {
-        errors.imageFile = "La imagen del producto es obligatoria.";
-    }
+    // La imagen ahora es siempre opcional
+    // Se usarán imágenes por defecto si no se proporciona
 
     // Stock
     const stockNum = Number.isFinite(Number(stock)) ? parseInt(stock, 10) : NaN;

@@ -71,6 +71,9 @@ export default function LoginPage() {
         // Guardar información del usuario en localStorage
         localStorage.setItem("user", JSON.stringify(data.data));
         
+        // Guardar claveRestaurante por separado para fácil acceso
+        localStorage.setItem("claveRestaurante", data.data.claveRestaurante);
+        
         // Determinar la ruta según el rol
         const rol = data.data.rol;
         let route = "/";

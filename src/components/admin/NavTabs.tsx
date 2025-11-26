@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChatSquare2Outline,
   DollarOutline,
   ChefHatOutline,
   SettingsOutline,
@@ -14,7 +13,6 @@ const tabs = [
   { href: "/admin", label: "Platillos", icon: ChefHatOutline },
   { href: "/admin/accounts", label: "Cuentas", icon: WidgetOutline },
   { href: "/admin/users", label: "Usuarios", icon: UsersGroupRoundedOutline },
-  { href: "/admin/reports", label: "Reportes", icon: ChatSquare2Outline },
   { href: "/admin/cash", label: "Caja", icon: DollarOutline },
   { href: "/admin/settings", label: "Ajustes", icon: SettingsOutline },
 ];

@@ -7,13 +7,13 @@ export async function PUT(
   try {
     const { userId } = await params;
     const body = await req.json();
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
     console.log("API Route PUT - User ID:", userId);
     console.log("API Route PUT - Body recibido:", body);
-    console.log("API Route PUT - URL del backend:", `${BACKEND}/api/users/${userId}`);
+    console.log("API Route PUT - URL del backend:", `${baseUrl}/users/${userId}`);
     
-    const response = await fetch(`${BACKEND}/api/users/${userId}`, {
+    const response = await fetch(`${baseUrl}/users/${userId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -40,12 +40,12 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await params;
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
     console.log("API Route DELETE - User ID:", userId);
-    console.log("API Route DELETE - URL del backend:", `${BACKEND}/api/users/${userId}`);
+    console.log("API Route DELETE - URL del backend:", `${baseUrl}/users/${userId}`);
     
-    const response = await fetch(`${BACKEND}/api/users/${userId}`, {
+    const response = await fetch(`${baseUrl}/users/${userId}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
     });

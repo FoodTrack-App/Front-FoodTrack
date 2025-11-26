@@ -6,12 +6,12 @@ export async function GET(
 ) {
   try {
     const { claveRestaurante } = await params;
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
     console.log("API Route - Clave del restaurante:", claveRestaurante);
-    console.log("API Route - URL del backend:", `${BACKEND}/api/users/restaurant/${claveRestaurante}`);
+    console.log("API Route - URL del backend:", `${baseUrl}/users/restaurant/${claveRestaurante}`);
     
-    const response = await fetch(`${BACKEND}/api/users/restaurant/${claveRestaurante}`, {
+    const response = await fetch(`${baseUrl}/users/restaurant/${claveRestaurante}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });

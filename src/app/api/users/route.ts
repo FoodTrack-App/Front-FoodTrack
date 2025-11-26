@@ -3,12 +3,12 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const BACKEND = process.env.BACKEND_API_URL || "http://localhost:5000";
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
     
     console.log("API Route POST - Body recibido:", body);
-    console.log("API Route POST - URL del backend:", `${BACKEND}/api/users`);
+    console.log("API Route POST - URL del backend:", `${baseUrl}/users`);
     
-    const response = await fetch(`${BACKEND}/api/users`, {
+    const response = await fetch(`${baseUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
